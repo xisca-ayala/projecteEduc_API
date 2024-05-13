@@ -9,6 +9,9 @@ class User{
         this.score = score;
         this.items_number = items_number;
         this.id_client = id_client;
+        this.age = age; 
+        this.items = items;
+        this.activities = activities; 
     }
 }
 

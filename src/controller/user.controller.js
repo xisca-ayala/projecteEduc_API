@@ -24,15 +24,22 @@ const createUser = async (req, res) => {
     }
 }
 
-//dubtes: envio directament l'edad enlloc del llinatge? l:huaira de calcular aqui? per enviar tambe els items i les activitats de l'usuari, ho ficaria dins el model user??
+//dubtes: per enviar tambe els items i les activitats de l'usuari, ho ficaria dins el model user??
 
 const loginUser = async (req, res) =>{
     let response = new Response(false, 200, "Login correcto", null);
     try{
-        let sql = "SELECT * FROM user JOIN item_user ON user.id_user = item_user.id_user WHERE user.name = '" + req.body.name + "' ";
+        let sql = "SELECT * FROM user JOIN item_user ON user.id_user = item_user.id_user JOIN activity_user ON user.id_user = activity_user.id_user WHERE user.name = '" + req.body.name + "' ";
         let [result] = await pool.query(sql);
         if(result.length){
-            response.data = new User(result[0].id_user, result[0].name, result[0].birthday, result[0].logo, result[0].level, result[0].score,result[0].items_number, result[0].id_client );
+            let user = new User(result[0].id_user, result[0].name, result[0].birthday, result[0].logo, result[0].level, result[0].score,result[0].items_number, result[0].id_client, null, result[0].items, result[0].activities);
+            let sql_age = "SELECT TIMESTAMPDIFF(YEAR, birthday, CURDATE()) AS age FROM user WHERE name = '" + req.body.name + "' ";
+            // "SELECT birthday(CURDATE()-birthday(user.birthday)+ IF(DATE_FORMAT(CURDATE(),'%m-%d') > DATE_FORMAT(user.birthday,'%m-%d'), 0 , -1 ) AS age) FROM user WHERE user.name = '" + req.body.name + "' ";
+            let [age_result] = await pool.query(sql_age);
+            if (age_result.length){
+                user.age = age_result[0].age;
+            }
+            response.data = user; 
         } else {
             response.err = true;
             response.message = "Login incorrecto";
