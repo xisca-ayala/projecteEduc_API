@@ -24,68 +24,53 @@ const createUser = async (req, res) => {
     }
 }
 
-// const login = async (req, res) =>{
-//     let response = new Response(false, 200, "Login correcto", null);
-//     try{
-//         let sql = "SELECT * FROM user WHERE user.email = '" + req.body.email + "' AND user.password = '" + req.body.password + "'";
-//         let [result] = await pool.query(sql);
-//         if(result.length){
-//             response.data = new User(result[0].id_user, result[0].name, result[0].last_name, result[0].email, result[0].photo, null);
-//         } else {
-//             response.err = true;
-//             response.message = "Login incorrecto";
-//             response.code = 400; 
-//         }
-//         res.send(response);
-//     }catch(err){
-//         console.error();(err);
-//     }
-// }
+//dubtes: envio directament l'edad enlloc del llinatge? l:huaira de calcular aqui? per enviar tambe els items i les activitats de l'usuari, ho ficaria dins el model user??
 
-// const updateUser = async(req, res) =>{
-//     let response = new Response(false, 200, "Usuario modificado", null);
-//     let user = new User(req.body.id_user, 
-//         req.body.name, 
-//         req.body.last_name,
-//         req.body.email, 
-//         req.body.photo, 
-//         null);
-//     try{
-//         let sqlEmail = "SELECT email FROM user WHERE email = '" + user.email + "' and id_user != " + user.id_user;
-//         let [checkEmail] = await pool.query(sqlEmail);
-//         if(checkEmail.length){
-//             response.err = true;
-//             response.message = 'Ya existe un usuario con este email';
-//         } else {
-//             let params =  [
-//                 user.name,
-//                 user.last_name, 
-//                 user.email,
-//                 user.photo,
-//                 user.id_user
-//             ];
-//             let sql = "UPDATE user SET  " +
-//             "name = COALESCE(?, name), " +
-//             "last_name = COALESCE (?, last_name), " +
-//             "email = COALESCE(?, email), " +
-//             "photo = COALESCE(?, photo) WHERE " +
-//             "id_user = ?"; 
-//             let [result] = await pool.query(sql, params);
-//             console.log(result);
-//             response.data = user;
-//             res.send(response);
-//         }
-//     }catch(err){
-//         console.error(err);
-//         response.message = "Fallo al intentar modificar el usuario";
-//         response.code = 400; 
-//         response.err = true; 
-//         res.send(response);
-//     }
-// }
+const loginUser = async (req, res) =>{
+    let response = new Response(false, 200, "Login correcto", null);
+    try{
+        let sql = "SELECT * FROM user JOIN item_user ON user.id_user = item_user.id_user WHERE user.name = '" + req.body.name + "' ";
+        let [result] = await pool.query(sql);
+        if(result.length){
+            response.data = new User(result[0].id_user, result[0].name, result[0].birthday, result[0].logo, result[0].level, result[0].score,result[0].items_number, result[0].id_client );
+        } else {
+            response.err = true;
+            response.message = "Login incorrecto";
+            response.code = 400; 
+        }
+        res.send(response);
+    }catch(err){
+        console.error();(err);
+    }
+}
 
 
+const updateUser = async(req, res) =>{
+    let response = new Response(false, 200, "Usuario modificado", null);
+    let user = new User(req.body.id_user, 
+        req.body.name, 
+        req.body.birthday,
+        req.body.logo, 
+        req.body.level);
+    try{
+        let sql = "UPDATE user SET  " +
+        "name = COALESCE(?, name), " +
+        "bithday = COALESCE (?, birthday), " +
+        "logo = COALESCE(?, logo), " +
+        "level = COALESCE(?, level) WHERE " +
+        "id_user = ?"; 
+        let [result] = await pool.query(sql, params);
+        console.log(result);
+        response.data = user;
+        res.send(response);
+    }catch(err){
+        console.error(err);
+        response.message = "Fallo al intentar modificar el usuario";
+        response.code = 400; 
+        response.err = true; 
+        res.send(response);
+    }
+}
 
+module.exports = { createUser, loginUser, updateUser}
 
-module.exports = { createUser}
-// , login, updateUser }
